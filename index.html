@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Provide email and Pay Now</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/css/bootstrap.css" rel="stylesheet" />
+</head>
+<body onload="checkAmountInKobo()">
+  <form >
+    <input type="text" id="firstname" placeholder="Your First name (optional)" /><br>
+    <input type="text" id="lastname" placeholder="Your Last name (optional)" /><br>
+    <input required="required" type="email" id="email" placeholder="Your email address" /><br>
+    <!-- The amount is hidden by default. Will be shown if the parameter amountinkobo is not a valid integer -->
+    <input required="required" type="number" step="100" id="amountinnaira" placeholder="Amount" style="visibility:hidden" /><br>
+    <p id="static-amount">You are paying: <span id="amountinngn">0</span> naira</p>
+    <button type="button" onclick="validateAndPay()"> Pay </button> 
+  </form>
+
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script>
+    /* 
+     * Validate before opening Paystack popup
+     */
+    function validateAndPay(){
+      var email = document.getElementById('email').value;
+      if(!simpleValidEmail(email)){
+        alert("Please provide a valid email");
+        return;
+      }
+      
+      var amountinkobo = getAmountInKobo();
+      if(!amountinkobo){
+        alert("Please provide a valid amount");
+        document.getElementById('amountinnaira').style.visibility="visible";
+        document.getElementById('static-amount').style.visibility="hidden";
+        return;
+      }
+      
+      // We are not validating firstname and lastname
+      var firstname = document.getElementById('firstname').value;
+      var lastname  = document.getElementById('lastname').value;
+      
+      payWithPaystack(email, amountinkobo, firstname, lastname);
+    }
+  
+    /* Get the query parameters for this window
+     * 
+     * source: http://stackoverflow.com/a/21210643/671568
+     */
+    function getParams(){
+      var queryDict = {}
+      location.search.substr(1).split("&").forEach(function(item) {queryDict[item.split("=")[0]] = item.split("=")[1]})
+      return queryDict;
+    }
+    
+    /* Check amount sent by get if it's a valid integer
+     * show the amount input box if not
+     */
+    function checkAmountInKobo(){
+      amountinkobo = getParams().amountinkobo;
+      
+      if(!simpleValidInt(amountinkobo)){
+        // show the amount box since an amount was not specified by GET
+        document.getElementById('amountinnaira').style.visibility="visible";
+        document.getElementById('static-amount').style.visibility="hidden";
+      } else {
+        document.getElementById('amountinngn').innerHTML = amountinkobo / 100;
+      }
+    }
+  
+    /* Get amount sent by get if it's a valid integer
+     * Get the amount entered in input box  multiplied
+     *  by 100. Show alert if no valid amountinkobo can be found
+     */
+    function getAmountInKobo(){
+      amountinkobo = getParams().amountinkobo;
+      
+      if(!amountinkobo){
+        amountinkobo = 100 * +document.getElementById('amountinnaira').value;
+      }
+      
+      if(!simpleValidInt(amountinkobo)){
+        alert("Please provide an amount to pay");
+      }
+      
+      return amountinkobo;
+    }
+  
+    /* Get a random reference number based on the current time
+     * 
+     * gotten from http://stackoverflow.com/a/2117523/671568
+     * replaced UUID with REF
+     */
+    function generateREF(){
+      var d = new Date().getTime();
+      if(window.performance && typeof window.performance.now === "function"){
+        d += performance.now(); //use high-precision timer if available
+      }
+      var ref = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = (d + Math.random()*16)%16 | 0;
+        d = Math.floor(d/16);
+        return (c=='x' ? r : (r&0x3|0x8)).toString(16);
+      });
+      return ref;
+    }
+    
+    /* Validate integer
+     *
+     * gotten from http://stackoverflow.com/a/25016143/671568
+     */
+    function simpleValidInt( data ) {
+      if (+data===parseInt(data)) {
+        return true
+      } else {
+        return false
+      }
+    };
+
+    
+    /* Validate email address 
+     * not meant for really secure email validation
+     *
+     * gotten from http://stackoverflow.com/a/28633540/671568
+     * Had to correct Regex, allowing A-Za-z0-9 to repeat
+     */
+    function simpleValidEmail( email ) {
+      return email.length < 256 && /^[^@]+@[^@]+[A-Za-z0-9]{2,}\.[^@]+[A-Za-z0-9]{2,}$/.test(email);
+    };
+
+    /* Show the paystack payment popup
+     * 
+     * source: https://developers.paystack.co/docs/paystack-inline
+     */
+    function payWithPaystack(validatedemail, amountinkobo, firstname, lastname){
+      var handler = PaystackPop.setup({
+        key: '<YOU PUBLIC KEY HERE>',
+        email:     validatedemail,
+        firstname: firstname,
+        firstname: firstname,
+        amount:    amountinkobo,
+        ref:       generateREF(), // This uses a random transaction reference based on the time the "Pay" button was clicked.
+        callback:  function(response){
+          // payment was received
+          alert('success. transaction ref is ' + response.trxref);
+        },
+        onClose:  function(){
+          // Visitor cancelled payment
+          alert('window closed, payment cancelled');
+        }
+      });
+      handler.openIframe();
+    }
+  </script>
+</body>
+</html>
