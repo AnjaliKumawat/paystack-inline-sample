@@ -5,7 +5,8 @@ Attempts to do all that you need to receive payments using Paystack on one page.
 
 ### Usage:
 
-Enter your public key in the `PaystackPop` function in `index.html`. 
+Enter your `public_key` in the script in `index.html`. If you do not, the page will prompt 
+you for the key when loading. If you still do not, the form will (magically?) disappear.
 
 To receive payments, you can send visitors to the page `index.html?amountinkobo=80000` 
 to collect a fixed amount (800) or just `index.html` so they provide the amount they want to pay.

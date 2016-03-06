@@ -4,11 +4,11 @@
   <title>Provide email and Pay Now</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha/css/bootstrap.css" rel="stylesheet" />
 </head>
-<body onload="checkAmountInKobo()">
+<body onload="startUp()">
   <div class="container">
     <div class="jumbotron">
       <h1 class="display-3">Paystack inline sample</h1>
-      <form class="form">
+      <form class="form" id="pay-form">
         <div class="text-center">
           <p>Please provide your details and click "Pay" to make your payment.</p>
         </div>
@@ -54,6 +54,47 @@
   </div>
   <script src="https://js.paystack.co/v1/inline.js"></script>
   <script>
+    // change this to your public key so you 
+    // will no more be prompted
+    var public_key = '<YOU PUBLIC KEY HERE>';
+    
+    /*
+     * Start up
+     */
+    function startUp(){
+      checkAmountInKobo();
+      promptForPublicKey();
+    }
+    
+    /*
+     * check if the public key set is valid
+     * 
+     * @return bool
+     */
+    function isValidPublicKey(){
+      var publicKeyPattern = new RegExp('^pk_(?:test|live)_','i');
+      return publicKeyPattern.test(public_key);
+    }
+    
+    /*
+     * Prompt for and set public key to use
+     * If public key set is not valid
+     */
+    function promptForPublicKey(){
+      if(!isValidPublicKey()){
+        // get a public key to use
+        public_key = prompt("To run this sample, you need to provide a public key.\n"+
+                            "Please visit https://dashboard.paystack.co/#/settings/developer to get your "+
+                            "public key and enter in the box below:", "pk_xxxx_");
+        // check that we got a valid public key 
+        // (starts with pk_live_ or pk_test_)
+        if (!isValidPublicKey()) {
+          var error_msg = "You didn't provide a public key. This page will not load.";
+          alert(error_msg);
+          document.getElementById('pay-form').innerHTML = error_msg;
+        }
+      }
+    }
     /* 
      * Validate before opening Paystack popup
      */
@@ -169,7 +210,7 @@
      */
     function payWithPaystack(validatedemail, amountinkobo, firstname, lastname){
       var handler = PaystackPop.setup({
-        key: '<YOU PUBLIC KEY HERE>',
+        key:       public_key,
         email:     validatedemail,
         firstname: firstname,
         firstname: firstname,
