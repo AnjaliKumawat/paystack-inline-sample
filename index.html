@@ -126,8 +126,13 @@
      * source: http://stackoverflow.com/a/21210643/671568
      */
     function getParams(){
-      var queryDict = {}
-      location.search.substr(1).split("&").forEach(function(item) {queryDict[item.split("=")[0]] = item.split("=")[1]})
+      var queryDict = {};
+      location.search
+        .substr(1)
+        .split("&")
+        .forEach(function(item) {
+          queryDict[item.split("=")[0]] = item.split("=")[1];
+        });
       return queryDict;
     }
     
@@ -188,9 +193,9 @@
      */
     function simpleValidInt( data ) {
       if (+data===parseInt(data)) {
-        return true
+        return true;
       } else {
-        return false
+        return false;
       }
     };
 
@@ -214,12 +219,15 @@
         key:       public_key,
         email:     validatedemail,
         firstname: firstname,
-        firstname: firstname,
+        lastname:  lastname,
         amount:    amountinkobo,
         ref:       generateREF(), // This uses a random transaction reference based on the time the "Pay" button was clicked.
         callback:  function(response){
           // payment was received
-          alert('Success. The transaction reference is ' + response.trxref);
+          // clear away the form, show success message
+          var msg = 'Success. The transaction reference is ' + response.trxref;
+          alert(msg);
+          document.getElementById('pay-form').innerHTML = '<div class="alert alert-success">' + msg + '</div>';
         },
         onClose:  function(){
           // Visitor cancelled payment
