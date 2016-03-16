@@ -10,6 +10,7 @@
     <div class="jumbotron">
       <h1 class="display-3">Paystack inline sample</h1>
       <form class="form" id="pay-form">
+        <div id="alert-holder"></div>
         <div class="text-center">
           <p>Please provide your details and click "Pay" to make your payment.</p>
         </div>
@@ -221,17 +222,19 @@
         firstname: firstname,
         lastname:  lastname,
         amount:    amountinkobo,
-        ref:       generateREF(), // This uses a random transaction reference based on the time the "Pay" button was clicked.
+        ref:       generateREF(), // This uses a random transaction reference based 
+                                  // on the time the "Pay" button was clicked.
         callback:  function(response){
           // payment was received
           // clear away the form, show success message
-          var msg = 'Success. The transaction reference is ' + response.trxref;
-          alert(msg);
-          document.getElementById('pay-form').innerHTML = '<div class="alert alert-success">' + msg + '</div>';
+          var msg = 'Success. The transaction reference is <b>"' + response.trxref + '"</b>';
+          document.getElementById('alert-holder').innerHTML = '<div class="alert alert-success">' + msg + '</div>';
+          document.getElementById("pay-form").reset();
         },
         onClose:  function(){
           // Visitor cancelled payment
-          alert('window closed, payment cancelled');
+          var msg = 'Cancelled. Please click the \'Pay\' button to try again';
+          document.getElementById('alert-holder').innerHTML = '<div class="alert alert-danger">' + msg + '</div>';
         }
       });
       handler.openIframe();
